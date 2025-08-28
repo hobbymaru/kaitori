@@ -3,53 +3,20 @@
 <head>
 <meta charset="utf-8">
 <title>郵送買取承諾書（ほびまる）</title>
-
-<!-- ★ iPhoneでの文字肥大防止 -->
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-
 <script src="https://yubinbango.github.io/yubinbango/yubinbango.js" charset="UTF-8"></script>
 <script src="https://cdn.jsdelivr.net/npm/html2pdf.js@0.10.1/dist/html2pdf.bundle.min.js"></script>
 
 <style>
-  /* --- iOSの自動拡大対策（アクセシビリティは尊重） --- */
-  html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
-
-  /* フォントスタックに iOS 系を先頭に */
-  body{
-    font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Hiragino Kaku Gothic ProN",
-                 "游ゴシック", "Yu Gothic", "Meiryo", sans-serif;
-    max-width:900px; margin:20px auto; padding:10px; line-height:1.5; background:#fff;
-  }
-
-  /* iOSのフォーカス時ズーム防止（最小16px推奨） */
-  input, select, textarea { font-size:16px; }
-
+  body{font-family:"游ゴシック","Meiryo",sans-serif;max-width:900px;margin:20px auto;padding:10px;line-height:1.5;background:#fff}
   table{width:100%;border-collapse:collapse;margin-bottom:12px}
   td,th{border:1px solid #333;padding:5px;vertical-align:middle;font-size:14px}
-  th{background:#f7f7f7}
-  h1{text-align:center;font-size:20px;margin:0 0 16px}
+  th{background:#f7f7f7} h1{text-align:center;font-size:20px;margin:0 0 16px}
   .right{text-align:right}.short{width:60px}.hidden{display:none}.note{font-size:12px;color:#444}.red{color:#c21}
   .signature{border:1px solid #333;height:60px;text-align:left;padding:12px;font-size:16px;font-weight:bold;background:#fdf5ce}
   #items-table td input,#items-table td select{width:100%;box-sizing:border-box}
   .nowrap{white-space:nowrap}.btn{padding:8px 14px;margin:4px;border:0;border-radius:4px;cursor:pointer;font-size:14px}
   .btn-primary{background:#007bff;color:#fff}.btn-secondary{background:#6c757d;color:#fff}.btn-success{background:#28a745;color:#fff}.btn-danger{background:#dc3545;color:#fff}
   .no-print{display:inline-block}
-
-  /* 小さめ画面（iPhone等）での見た目調整：PCはそのまま */
-  @media (max-width: 480px) {
-    body { font-size:14px; }
-    td, th { font-size:13px; }
-    h1 { font-size:18px; }
-    .signature { font-size:15px; }
-  }
-
-  /* iOSを緩く検出してもう少しだけ抑える（任意） */
-  @supports (-webkit-touch-callout: none) {
-    @media (max-width: 480px) {
-      body { font-size:14px; }
-      td, th { font-size:13px; }
-    }
-  }
 
   /* ブラウザから直接印刷する場合用（html2pdf保存には影響しません） */
   @page{size:A4 portrait;margin:10}
@@ -192,10 +159,19 @@
   </p>
 </form>
 
+
 <script>
   const $=s=>document.querySelector(s), $$=s=>document.querySelectorAll(s);
   const num=v=>isNaN(parseFloat(v))?0:parseFloat(v);
   const mm2px=mm=>Math.round(mm*(96/25.4));
+
+  // ★追加：iOS Safari 判定（Chrome/Firefox/Edge on iOSは除外）
+  const IS_IOS_SAFARI = (() => {
+    const ua = navigator.userAgent;
+    const isiOS = /iPhone|iPad|iPod/.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+    const isSafari = /Safari/.test(ua) && !/CriOS|FxiOS|EdgiOS/.test(ua);
+    return isiOS && isSafari;
+  })();
 
   // 今日の日付
   const setToday=()=>{const t=new Date();$('#apply_y').value=t.getFullYear();$('#apply_m').value=t.getMonth()+1;$('#apply_d').value=t.getDate();};
@@ -297,6 +273,22 @@
           `;
           doc.head.appendChild(style);
 
+          // ★追加：iOS Safari の PDFだけ文字を小さく & 自動文字拡大を抑制
+          if (IS_IOS_SAFARI) {
+            const iosStyle = doc.createElement('style');
+            iosStyle.textContent = `
+              #pdfArea{
+                -webkit-text-size-adjust: 100% !important;
+                text-size-adjust: 100% !important;
+                font-size: 90% !important;     /* 必要に応じて 85%〜95% で調整 */
+                line-height: 1.35 !important;
+              }
+              #pdfArea h1{ font-size: 14px !important; }
+              #pdfArea td, #pdfArea th, #pdfArea p, #pdfArea li{ font-size: 11px !important; }
+            `;
+            doc.head.appendChild(iosStyle);
+          }
+
           // ラジオ/チェック → （〇）/（　）
           root.querySelectorAll('label').forEach(lbl=>{
             const inp = lbl.querySelector('input[type="radio"], input[type="checkbox"]');
@@ -351,7 +343,8 @@
 
           // 両辺フィット + 余裕係数で確実に収める
           const LEEWAY = 0.985; // 1.5%だけ縮めて誤差吸収（必要なら 0.98 に）
-          const scale = Math.min(USABLE_W / nW, USABLE_H / nH) * LEEWAY;
+          const IOS_EXTRA = IS_IOS_SAFARI ? 0.96 : 1; // ★追加：iOS Safari ならさらに縮める（0.94〜0.99で調整可）
+          const scale = Math.min(USABLE_W / nW, USABLE_H / nH) * LEEWAY * IOS_EXTRA;
 
           content.style.transformOrigin = 'top left';
           content.style.transform = `scale(${scale})`;
