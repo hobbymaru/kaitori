@@ -1,0 +1,394 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<title>郵送買取承諾書（ほびまる）</title>
+<script src="https://yubinbango.github.io/yubinbango/yubinbango.js" charset="UTF-8"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.11.2/html2pdf.bundle.min.js"></script>
+
+<style>
+  body{font-family:"游ゴシック","Meiryo",sans-serif;max-width:900px;margin:20px auto;padding:10px;line-height:1.5;background:#fff}
+  table{width:100%;border-collapse:collapse;margin-bottom:12px}
+  td,th{border:1px solid #333;padding:5px;vertical-align:middle;font-size:14px}
+  th{background:#f7f7f7} h1{text-align:center;font-size:20px;margin:0 0 16px}
+  .right{text-align:right}.short{width:60px}.hidden{display:none}.note{font-size:12px;color:#444}.red{color:#c21}
+  .signature{border:1px solid #333;height:60px;text-align:left;padding:12px;font-size:16px;font-weight:bold;background:#fdf5ce}
+  #items-table td input,#items-table td select{width:100%;box-sizing:border-box}
+  .nowrap{white-space:nowrap}.btn{padding:8px 14px;margin:4px;border:0;border-radius:4px;cursor:pointer;font-size:14px}
+  .btn-primary{background:#007bff;color:#fff}.btn-secondary{background:#6c757d;color:#fff}.btn-success{background:#28a745;color:#fff}.btn-danger{background:#dc3545;color:#fff}
+  .no-print{display:inline-block}
+
+  /* ブラウザから直接印刷する場合用（html2pdf保存には影響しません） */
+  @page{size:A4 portrait;margin:10}
+  @media print{
+    html,body{width:210mm;height:297mm;margin:10!important;padding:10!important;background:#fff!important;overflow:hidden!important}
+    .no-print{display:none!important}
+    input::placeholder,textarea::placeholder{color:transparent!important}
+    /* 印刷時はフィールド枠を消す */
+    input,textarea,select{border:none!important;background:transparent!important;box-shadow:none!important;outline:0!important}
+    .signature{background:#fdf5ce!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+    #pdfArea{width:210mm!important;height:297mm!important;margin:10!important;padding:10!important;background:#fff!important;position:relative;overflow:hidden!important}
+  }
+</style>
+</head>
+<body>
+
+<form id="leadForm" class="h-adr">
+  <div id="pdfArea">
+    <h1>郵送買取承諾書（ほびまる）</h1>
+
+    <!-- 申込者情報 -->
+    <table>
+      <tr>
+        <td colspan="4" class="right">申込日：
+          <input type="number" class="short" name="apply_y" id="apply_y" min="2020" max="2100">年
+          <input type="number" class="short" name="apply_m" id="apply_m" min="1" max="12">月
+          <input type="number" class="short" name="apply_d" id="apply_d" min="1" max="31">日
+        </td>
+         <button type="button" id="setTodayBtn" class="btn btn-secondary no-print" style="font-size:12px">今日の日付</button>
+      </tr>
+      <tr>
+        <td style="width:22%">御名前（カナ）</td>
+        <td style="width:28%"><input type="text" name="name_kana" pattern="[ァ-ヾ\s]*"></td>
+        <!-- 住所：同じ列で4行、セルは3行分を占有 -->
+        <td rowspan="3" style="width:18%">住所</td>
+        <td rowspan="3" style="width:32%">
+          <span class="p-country-name" style="display:none">Japan</span>
+          〒<input type="text" class="p-postal-code" name="postal_code" size="8" maxlength="8" inputmode="numeric" pattern="[0-9\-]*"><br>
+          <input type="text" class="p-region p-locality p-street-address p-extended-address" name="address"><br>
+          <input type="text" name="addr_building"><br>
+          <input type="text" name="addr_building2">
+        </td>
+      </tr>
+      <tr><td>御名前（漢字）</td><td><input type="text" name="name_kanji"></td></tr>
+      <tr><td>電話番号</td><td><input type="text" name="tel" pattern="[0-9\-]*"></td></tr>
+      <tr>
+        <td>生年月日</td>
+        <td class="nowrap">
+          <input type="number" class="short" name="birth_y" min="1900" max="2100">年
+          <input type="number" class="short" name="birth_m" min="1" max="12">月
+          <input type="number" class="short" name="birth_d" min="1" max="31">日
+        </td>
+        <td>ご職業</td>
+        <td>
+          <select id="job" name="job">
+            <option value=""></option><option>会社員</option><option>自営業</option>
+            <option>アルバイト</option><option>学生</option><option>主婦</option><option value="other">その他</option>
+          </select>
+          <input type="text" id="job_other" name="job_other" class="hidden" placeholder="その他の内容を入力">
+        </td>
+      </tr>
+      <tr>
+        <td>当店ご利用歴</td>
+        <td colspan="3">
+          <label><input type="radio" name="history" value="初回">初回</label>
+          <label><input type="radio" name="history" value="利用あり">ご利用歴あり</label>
+        </td>
+      </tr>
+    </table>
+
+    <!-- 振込先 -->
+    <table>
+      <tr><td colspan="4"><strong>■ 振込先</strong></td></tr>
+      <tr><td style="width:20%">銀行名：</td><td style="width:30%"><input type="text" name="bank_name"></td>
+          <td style="width:20%">支店名（3桁）：</td><td style="width:30%"><input type="text" name="branch_code" class="short" maxlength="3" pattern="[0-9]*"></td></tr>
+      <tr><td>口座番号（7桁）：</td><td><input type="text" name="account_no" maxlength="7" pattern="[0-9]*"></td>
+          <td>口座名義（カナ）：</td><td><input type="text" name="account_kana" pattern="[ァ-ヾ\s]*"></td></tr>
+      <tr>
+        <td colspan="4">
+          種類：
+          <label><input type="radio" name="account_kind" value="普通">普通</label>
+          <label><input type="radio" name="account_kind" value="当座">当座</label><br><br>
+          送付いただく身分証明書（いずれか1点）：<br>
+          <label><input type="checkbox" name="id_dl">運転免許証コピー</label>
+          <label><input type="checkbox" name="id_mynum">マイナンバーカード（表面）</label>
+          <label><input type="checkbox" name="id_residence">住民票の写し</label>
+          <label><input type="checkbox" name="id_seal">印鑑登録証明書</label>
+          <label><input type="checkbox" name="id_accountcard">口座登録カードコピー</label>
+        </td>
+      </tr>
+    </table>
+
+    <!-- 商品明細 -->
+    <table id="items-table">
+      <thead>
+        <tr><td colspan="5"><strong>■ 商品明細（シュリンク有無も選択してください）</strong></td></tr>
+        <tr>
+          <th style="width:36%">商品名（BOX or カートン）</th>
+          <th style="width:14%">シュリンク</th>
+          <th style="width:14%">単価（円）</th>
+          <th style="width:12%">数量</th>
+          <th style="width:14%">金額</th>
+        </tr>
+      </thead>
+      <tbody id="items-body"></tbody>
+      <tfoot>
+        <tr><td colspan="4" class="right">振込金額合計：</td><td><input type="number" name="total_amount" readonly></td></tr>
+      </tfoot>
+    </table>
+
+    <p class="note">※ 記載されない場合は弊社にて記載致します。</p>
+    <button type="button" id="addRowBtn" class="btn btn-success no-print">＋ 行を追加</button>
+
+    <h3>■ ご確認事項</h3>
+    <ul>
+      <li class="red">買取合計金額が10万円以上の場合は弊社送料負担、10万円未満の場合はお客様負担にて発送をお願いいたします。</li>
+      <li>郵送買取の弊社到着までに生じた破損や紛失に関しては責任を負うことができません。</li>
+      <li>買取振込は原則、商品の到着確認日の翌日営業日までに行いますが、金融機関により着金に時間がかかる場合があります。</li>
+      <li>検品内容におきまして不備等が発覚した商品については減額のご連絡をさせていただきます。</li>
+      <li class="red">検品商品に問題がない場合の完了連絡は行わず、振込をもって終了とします。</li>
+      <li class="red">買取承諾書の未記入・身分証未同封・記入不備は振込せず返送となる場合があります。</li>
+      <li>買取成立後（お振込後）のキャンセル・返品はできません。</li>
+      <li>18歳未満は保護者同意書が必要です。</li>
+      <li class="red">転売目的・不正商品発覚時は返送せず当社で処分します。</li>
+    </ul>
+
+    <p>同意いただける場合のみ、下記に手書きでご署名ください。</p>
+    <div class="signature">ご署名（手書き欄）</div>
+
+    <h3>■ 商品送付先</h3>
+    <p>
+      〒141-0031　東京都品川区西五反田3-6-20 いちご西五反田ビル8F<br>
+      買取ほびまる　郵送係　TEL：03-6388-1337
+    </p>
+  </div>
+
+  <p style="text-align:center;margin-top:16px" class="no-print">
+    <button type="submit" id="submitBtn" class="btn btn-primary">送信する（PDF生成）</button>
+    <button type="reset" class="btn btn-secondary">リセット</button>
+  </p>
+</form>
+
+
+<script>
+  const $=s=>document.querySelector(s), $$=s=>document.querySelectorAll(s);
+  const num=v=>isNaN(parseFloat(v))?0:parseFloat(v);
+  const mm2px=mm=>Math.round(mm*(96/25.4));
+
+  // ★追加：iOS Safari 判定（Chrome/Firefox/Edge on iOSは除外）
+  const IS_IOS_SAFARI = (() => {
+    const ua = navigator.userAgent;
+    const isiOS = /iPhone|iPad|iPod/.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+    const isSafari = /Safari/.test(ua) && !/CriOS|FxiOS|EdgiOS/.test(ua);
+    return isiOS && isSafari;
+  })();
+
+  // 今日の日付
+  const setToday=()=>{const t=new Date();$('#apply_y').value=t.getFullYear();$('#apply_m').value=t.getMonth()+1;$('#apply_d').value=t.getDate();};
+  $('#setTodayBtn').addEventListener('click',setToday);
+  window.addEventListener('load',()=>{ if(!$('#apply_y').value) setToday(); initRows(5); });
+
+  // 職業その他
+  $('#job').addEventListener('change',e=>{ const o=$('#job_other'); (e.target.value==='other')?o.classList.remove('hidden'):(o.classList.add('hidden'),o.value=''); });
+
+  // 郵便番号ハイフン
+  $('input[name="postal_code"]').addEventListener('input',e=>{
+    let v=e.target.value.replace(/[^\d]/g,''); if(v.length>=4) v=v.slice(0,3)+'-'+v.slice(3,7); if(e.target.value!==v) e.target.value=v;
+  });
+
+  // 商品明細（削除ボタンあり）
+  const body=$('#items-body'), total=$('input[name="total_amount"]');
+  const createRow=()=> {
+    const tr=document.createElement('tr');
+    tr.innerHTML=`<td><input type="text" name="item_name[]"></td>
+      <td><select name="item_shrink[]"><option value=""></option><option>あり</option><option>なし</option></select></td>
+      <td><input type="number" name="item_price[]" min="0" step="1"></td>
+      <td><input type="number" name="item_qty[]" min="0" step="1"></td>
+      <td><input type="number" name="item_amount[]" readonly></td>
+      <td class="no-print"><button type="button" class="delRowBtn btn btn-danger">削除</button></td>`;
+    return tr;
+  };
+  function initRows(n){ for(let i=0;i<n;i++) body.appendChild(createRow()); }
+  function updateRow(tr){
+    const p=num(tr.querySelector('input[name="item_price[]"]').value);
+    const q=num(tr.querySelector('input[name="item_qty[]"]').value);
+    tr.querySelector('input[name="item_amount[]"]').value=(p||q)?Math.round(p*q):'';
+  }
+  function updateTotal(){ let sum=0; $$('input[name="item_amount[]"]').forEach(i=>sum+=num(i.value)); total.value=sum||''; }
+  body.addEventListener('input',e=>{
+    if(['item_price[]','item_qty[]'].includes(e.target.name)){ updateRow(e.target.closest('tr')); updateTotal(); }
+  });
+  $('#addRowBtn').addEventListener('click',()=>body.appendChild(createRow()));
+  body.addEventListener('click',e=>{
+    if(e.target.classList.contains('delRowBtn')){
+      const tr=e.target.closest('tr');
+      if(body.children.length>1){ tr.remove(); updateTotal(); }
+      else alert('最低1行は残す必要があります。');
+    }
+  });
+
+  // ===== PDF生成（拡張用紙 + 高さ-2pxセーフティで白紙2ページ防止） =====
+  $('#leadForm').addEventListener('submit', async e => {
+    e.preventDefault();
+    window.scrollTo(0,0);
+    $$('#items-body tr').forEach(updateRow);
+    updateTotal();
+
+    const y=($('#apply_y').value||'').toString().padStart(4,'0'),
+          m=($('#apply_m').value||'').toString().padStart(2,'0'),
+          d=($('#apply_d').value||'').toString().padStart(2,'0'),
+          filename=`ほびまる_買取承諾書_${y}${m}${d}.pdf`;
+
+    // A4を少し拡張（左右上下合計+6mm）→ 余裕を持たせる
+    const A4W = mm2px(210), A4H = mm2px(297);
+    const BLEED_MM = 6;                      // さらに余裕が必要なら 8〜10 に
+    const PW = mm2px(210 + BLEED_MM);        // PDFページ幅（px）
+    const PH = mm2px(297 + BLEED_MM);        // PDFページ高（px）
+
+    // 白紙2ページ防止：DOM側の高さはPDFより 2px 小さく使う
+    const FUDGE_PX = 2;
+    const PH_SAFE = PH - FUDGE_PX;
+
+    const area = $('#pdfArea');
+
+    const opt = {
+      margin: 20,
+      filename,
+      image: { type:'jpeg', quality:1 },
+      pagebreak: { mode: [] },
+      html2canvas: {
+        scale: 2,
+        useCORS: true,
+        backgroundColor: '#fff',
+        scrollX: 0, scrollY: 0,
+        onclone: (doc) => {
+          const root = doc.querySelector('#pdfArea');
+
+          // PDF化専用スタイル（クローンのみ）
+          const style = doc.createElement('style');
+          style.textContent=`
+            #pdfArea{margin:0!important;padding:0!important}
+            #pdfArea h1{margin:2px 0 6px!important;font-size:18px!important}
+            #pdfArea table{margin:6px 0!important}
+            #pdfArea td,#pdfArea th{padding:1.5px!important;font-size:12px!important}
+            #pdfArea p{margin:0px 0!important;font-size:12px!important}
+            #pdfArea ul{margin:3px 0 0 16px!important}
+            #pdfArea li{margin:0 0 2px!important;font-size:13px!important}
+            #pdfArea .signature{height:40px!important;padding:8px!important;font-size:13px!important;background:#fdf5ce!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+            #pdfArea input::placeholder,#pdfArea textarea::placeholder{color:transparent!important}
+            #pdfArea .no-print,#pdfArea button{display:none!important}
+            #pdfArea table,#pdfArea td,#pdfArea th{border-color:#333!important}
+            /* ★PDF化時もフィールドの枠を消す（念のため） */
+            #pdfArea input,#pdfArea textarea,#pdfArea select{border:none!important;background:transparent!important;box-shadow:none!important;outline:0!important}
+          `;
+          doc.head.appendChild(style);
+
+          // ★追加：iOS Safari の PDFだけ文字を小さく & 自動文字拡大を抑制
+          if (IS_IOS_SAFARI) {
+            const iosStyle = doc.createElement('style');
+            iosStyle.textContent = `
+              #pdfArea{
+                -webkit-text-size-adjust: 100% !important;
+                text-size-adjust: 100% !important;
+                font-size: 90% !important;     /* 必要に応じて 85%〜95% で調整 */
+                line-height: 1.35 !important;
+              }
+              #pdfArea h1{ font-size: 14px !important; }
+              #pdfArea td, #pdfArea th, #pdfArea p, #pdfArea li{ font-size: 11px !important; }
+            `;
+            doc.head.appendChild(iosStyle);
+          }
+
+          // ラジオ/チェック → （〇）/（　）
+          root.querySelectorAll('label').forEach(lbl=>{
+            const inp = lbl.querySelector('input[type="radio"], input[type="checkbox"]');
+            if(!inp) return;
+            const txt  = (lbl.textContent || '').trim();
+            const mark = inp.checked ? '（〇）' : '（　）';
+            const span = doc.createElement('span');
+            span.textContent = mark + txt;
+            lbl.replaceWith(span);
+          });
+
+          // select → テキスト
+          const selects = doc.querySelectorAll( 'select' );
+          selects.forEach( select => {
+            const span = doc.createElement('span');
+            span.textContent = select.value ? (select.selectedOptions[0]?.text || select.value) : '';
+            select.replaceWith(span);
+          });
+          // root.querySelectorAll('select').forEach(sel=>{
+          //   const sp = doc.createElement('span');
+          //   sp.textContent = sel.value ? (sel.selectedOptions[0]?.text || sel.value) : '';
+          //   sel.replaceWith(sp);
+          // });
+
+          // input（テキスト/数値など）→ テキスト
+          const inputs = doc.querySelectorAll( "input[type='text'] , input[type='number']" );
+          inputs.forEach( input => {
+            const span = doc.createElement('span');
+            span.textContent = input.value || '';
+            input.replaceWith(span);
+          } );
+          // root.querySelectorAll('input').forEach(i=>{
+          //   const t=(i.type||'text').toLowerCase();
+          //   if(['radio','checkbox','hidden','button','submit','reset'].includes(t)){ i.remove(); return; }
+          //   const sp=doc.createElement('span'); sp.textContent=i.value||''; i.replaceWith(sp);
+          // });
+
+          // —— ここから1ページ固定配置（PDF: PW×PH、DOM: PW×PH_SAFE）——
+          const frame = doc.createElement('div');
+          const content = doc.createElement('div');
+          while(root.firstChild) content.appendChild(root.firstChild);
+          frame.appendChild(content); root.appendChild(frame);
+
+          // ルートは PDFより2px低い（白紙2ページ防止）
+          root.style.width  = PW + 'px';
+          root.style.height = PH_SAFE + 'px';
+          root.style.maxWidth = 'none';
+          root.style.background = '#fff';
+          root.style.overflow = 'hidden';
+
+          frame.style.width  = PW + 'px';
+          frame.style.height = PH_SAFE + 'px';
+          frame.style.overflow = 'hidden';
+
+          // 右端切れ防止の微小ガター
+          const GUTTER = 6; // 余裕が必要なら 8〜10 に
+          const USABLE_W = PW - GUTTER;
+          const USABLE_H = PH_SAFE - GUTTER;
+
+          // 実寸（やや甘めにCEIL）
+          const bbox = content.getBoundingClientRect();
+          const nW = Math.ceil(bbox.width);
+          const nH = Math.ceil(bbox.height);
+
+          // 両辺フィット + 余裕係数で確実に収める
+          const LEEWAY = 0.985; // 1.5%だけ縮めて誤差吸収（必要なら 0.98 に）
+          const IOS_EXTRA = IS_IOS_SAFARI ? 0.96 : 1; // ★追加：iOS Safari ならさらに縮める（0.94〜0.99で調整可）
+          const scale = Math.min(USABLE_W / nW, USABLE_H / nH) * LEEWAY * IOS_EXTRA;
+
+          content.style.transformOrigin = 'top left';
+          content.style.transform = `scale(${scale})`;
+          content.style.width  = nW + 'px';
+          content.style.height = nH + 'px';
+          content.style.maxWidth = 'none';
+
+          // 水平センタリング
+          const scaledW = nW * scale;
+          content.style.marginLeft = Math.max(0, (USABLE_W - scaledW) / 2) + 'px';
+        }
+      },
+      // PDF（jsPDF）の用紙は拡張サイズのまま
+      jsPDF: { unit:'px', format:[PW, PH], orientation:'p' }
+    };
+
+    try{
+      const btn=$('#submitBtn'); btn.textContent='PDF生成中...'; btn.disabled=true;
+      await html2pdf().set(opt).from(area).save();
+      alert('PDFが正常に生成されました。');
+    }catch(err){
+      console.error(err);
+      alert('PDF生成に失敗しました。ブラウザの印刷機能でPDF保存をお試しください。');
+      window.print();
+    }finally{
+      const btn=$('#submitBtn'); btn.textContent='送信する（PDF生成）'; btn.disabled=false;
+    }
+  });
+
+  // リセット後に日付と合計を整える
+  document.querySelector('[type="reset"]').addEventListener('click',()=>setTimeout(()=>{ setToday(); total.value=''; },100));
+</script>
+
+</body>
+</html>
